@@ -372,14 +372,14 @@ export default function HomePage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-[1120px] px-4 pb-7 pt-5" onClick={() => closeAllSwipes()}>
+    <main className="mx-auto w-full max-w-[430px] px-4 pb-7 pt-5" onClick={() => closeAllSwipes()}>
       <Card className="mb-4 p-3">
         <div className="flex items-center justify-between gap-3">
           <p className="m-0 text-lg font-extrabold text-foreground">Sayajual</p>
           <div className="flex items-center gap-2">
             {authLoading ? null : user ? (
               <>
-                <p className="hidden text-xs text-muted md:block">{user.email}</p>
+                <p className="max-w-[120px] truncate text-xs text-muted">{user.email}</p>
                 <Button variant="secondary" size="sm" onClick={handleLogout}>
                   Logout
                 </Button>
@@ -411,10 +411,10 @@ export default function HomePage() {
         </div>
       </Card>
 
-      <div className={showDashboardOnly ? 'grid gap-4' : 'grid gap-4 md:grid-cols-[280px_1fr]'}>
-        <aside className={showDashboardOnly ? 'order-1' : 'order-2 md:order-1'}>
+      <div className="grid gap-4">
+        <aside className={showDashboardOnly ? 'order-1' : 'order-2'}>
           {user ? (
-            <Card className="p-4 md:sticky md:top-5">
+            <Card className="p-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="m-0 text-lg font-extrabold text-foreground">My Listings</h2>
                 <Button size="sm" onClick={() => setShowComposer(true)}>
@@ -452,7 +452,7 @@ export default function HomePage() {
         </aside>
 
         {!showDashboardOnly ? (
-        <section className="order-1 md:order-2 space-y-4">
+        <section className="order-1 space-y-4">
           {user ? (
             <div className="flex justify-end">
               <Button variant="secondary" size="sm" onClick={() => setShowComposer(false)}>
