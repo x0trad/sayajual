@@ -2,7 +2,7 @@
 
 Mobile-first web app that turns a Threads selling post into a simple listing page with item name, price, and status (`AVAILABLE` / `SOLD`).
 
-Now migrated to **Next.js + shadcn-style UI components**.
+Now migrated to **Next.js + shadcn-style UI components** and **Postgres database storage**.
 
 ## Current Scope (v0.2)
 
@@ -18,9 +18,17 @@ Now migrated to **Next.js + shadcn-style UI components**.
 - React
 - Tailwind CSS
 - shadcn-style UI primitives (`Button`, `Input`, `Card`, `StatusBadge`)
-- Local JSON persistence for listings (dev only)
+- Postgres (`pg`) for listing persistence
 
 ## Run Locally
+
+1. Set database connection string:
+
+```bash
+export DATABASE_URL="postgres://USER:PASSWORD@HOST:PORT/DB"
+```
+
+2. Install and run:
 
 ```bash
 npm install
@@ -34,6 +42,15 @@ npm run build
 npm start
 ```
 
+## Vercel Environment Variables
+
+Set one of these in your Vercel project:
+
+- `DATABASE_URL` (preferred)
+- `POSTGRES_URL` (fallback)
+
+Without this, publish and public listing pages will fail intentionally.
+
 ## Project Structure
 
 - `app/page.jsx` - homepage UI and swipe interactions
@@ -42,8 +59,8 @@ npm start
 - `app/api/listings/publish/route.js` - publish endpoint
 - `components/ui/*` - shadcn-style primitives
 - `lib/parser.js` - Threads parsing logic
-- `lib/listings.js` - listing persistence/slug logic
-- `data/listings.json` - local published listings data (runtime)
+- `lib/db.js` - Postgres pool + schema bootstrap
+- `lib/listings.js` - listing queries/writes
 
 ## API Endpoints
 
@@ -95,14 +112,8 @@ Response:
 ### `GET /l/:slug`
 Returns a public mobile listing page.
 
-## Important Note for Vercel
-
-Current persistence uses `data/listings.json`, which is not durable in serverless environments.
-For production launch, migrate to Vercel KV/Postgres so published listings persist.
-
 ## Next Milestones
 
 1. Sign-in required before publish
 2. Real AI structured extraction (replace heuristics)
-3. Move listing persistence to Vercel KV/Postgres
-4. Seller dashboard for post-publish status updates
+3. Seller dashboard for post-publish status updates

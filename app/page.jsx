@@ -251,7 +251,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-[430px] px-4 pb-44 pt-5" onClick={() => closeAllSwipes()}>
+    <main className="mx-auto w-full max-w-[430px] px-4 pb-7 pt-5" onClick={() => closeAllSwipes()}>
       <Card className="p-4">
         <p className="m-0 text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
           For Threads Sellers
@@ -346,29 +346,27 @@ export default function HomePage() {
         </ul>
       </Card>
 
-      <section className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#f7f8fc] via-[#f7f8fc] to-transparent px-4 pb-4 pt-3">
-        <div className="mx-auto w-full max-w-[430px]">
-          <Button className="w-full" size="lg" disabled={!canPublish} onClick={handlePublish}>
-            {isPublishing ? 'Publishing...' : 'Publish This Page'}
-          </Button>
-          <p className="mb-0 mt-2 text-center text-xs text-muted">
-            Publish to get a shareable link for your Threads post.
-          </p>
+      <section className="mt-4">
+        <Button className="w-full" size="lg" disabled={!canPublish} onClick={handlePublish}>
+          {isPublishing ? 'Publishing...' : 'Publish This Page'}
+        </Button>
+        <p className="mb-0 mt-2 text-center text-xs text-muted">
+          Publish to get a shareable link for your Threads post.
+        </p>
 
-          {publishedLink ? (
-            <Card className="mt-2 p-3">
-              <p className="m-0 text-[0.65rem] font-extrabold uppercase tracking-[0.07em] text-muted">
-                Share Link
-              </p>
-              <a className="mt-1 block break-all text-sm text-foreground no-underline" href={publishedLink}>
-                {publishedLink}
-              </a>
-              <Button className="mt-2 w-full" size="sm" variant="secondary" onClick={copyLink}>
-                Copy Link
-              </Button>
-            </Card>
-          ) : null}
-        </div>
+        {publishedLink ? (
+          <Card className="mt-2 p-3">
+            <p className="m-0 text-[0.65rem] font-extrabold uppercase tracking-[0.07em] text-muted">
+              Share Link
+            </p>
+            <a className="mt-1 block break-all text-sm text-foreground no-underline" href={publishedLink}>
+              {publishedLink}
+            </a>
+            <Button className="mt-2 w-full" size="sm" variant="secondary" onClick={copyLink}>
+              Copy Link
+            </Button>
+          </Card>
+        ) : null}
       </section>
     </main>
   );

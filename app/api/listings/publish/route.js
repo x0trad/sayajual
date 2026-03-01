@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createListing, hasValidItems, normalizePublishedItems } from '@/lib/listings';
+import { hasDatabaseConfig } from '@/lib/db';
 import { isValidThreadsUrl } from '@/lib/parser';
 
 export async function POST(request) {
+  if (!hasDatabaseConfig()) {
+    return NextResponse.json(
+      { error: 'Database not configured. Set DATABASE_URL in environment variables.' },
+      { status: 500 }
+    );
+  }
+
   try {
     const payload = await request.json();
     const sourceUrl = String(payload?.sourceUrl || '').trim();
@@ -20,7 +28,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No valid items to publish.' }, { status: 400 });
     }
 
-    const listing = createListing({ sourceUrl, title, items });
+    const listing = await createListing({ sourceUrl, title, items });
 
     return NextResponse.json(
       {
@@ -31,6 +39,6 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch {
-    return NextResponse.json({ error: 'Invalid request payload.' }, { status: 400 });
+    return NextResponse.json({ error: 'Unable to publish listing right now.' }, { status: 500 });
   }
 }

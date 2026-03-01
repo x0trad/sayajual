@@ -3,11 +3,16 @@ import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/badge';
 import { getListingBySlug } from '@/lib/listings';
+import { hasDatabaseConfig } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export default function ListingPage({ params }) {
-  const listing = getListingBySlug(params.slug);
+export default async function ListingPage({ params }) {
+  if (!hasDatabaseConfig()) {
+    notFound();
+  }
+
+  const listing = await getListingBySlug(params.slug);
 
   if (!listing) {
     notFound();
