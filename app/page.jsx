@@ -59,6 +59,7 @@ export default function HomePage() {
 
   const [myListings, setMyListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(false);
+  const [showComposer, setShowComposer] = useState(false);
 
   const [editingItemId, setEditingItemId] = useState(null);
   const [editName, setEditName] = useState('');
@@ -71,6 +72,7 @@ export default function HomePage() {
     () => !isPublishing && items.length > 0 && Boolean(sourceUrl) && Boolean(user),
     [isPublishing, items.length, sourceUrl, user]
   );
+  const showDashboardOnly = Boolean(user) && !showComposer;
 
   const loadMyListings = async () => {
     if (!user) {
@@ -116,6 +118,12 @@ export default function HomePage() {
   useEffect(() => {
     loadMyListings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      setShowComposer(false);
+    }
   }, [user]);
 
   const closeAllSwipes = (exceptId = null) => {
@@ -255,6 +263,7 @@ export default function HomePage() {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
       setMyListings([]);
+      setShowComposer(false);
       setFeedback('Signed out. Sign in again to publish.');
     } catch {
       setFeedback('Unable to sign out right now.');
@@ -359,11 +368,16 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-[1120px] px-4 pb-7 pt-5" onClick={() => closeAllSwipes()}>
-      <div className="grid gap-4 md:grid-cols-[280px_1fr]">
-        <aside className="order-2 md:order-1">
+      <div className={showDashboardOnly ? 'grid gap-4' : 'grid gap-4 md:grid-cols-[280px_1fr]'}>
+        <aside className={showDashboardOnly ? 'order-1' : 'order-2 md:order-1'}>
           {user ? (
             <Card className="p-4 md:sticky md:top-5">
-              <h2 className="m-0 text-lg font-extrabold text-foreground">Selling Sessions</h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="m-0 text-lg font-extrabold text-foreground">My Listings</h2>
+                <Button size="sm" onClick={() => setShowComposer(true)}>
+                  Create New
+                </Button>
+              </div>
               <p className="mt-1 text-xs text-muted">Your created Threads listings</p>
 
               <div className="mt-3 max-h-[55vh] space-y-2 overflow-auto pr-1">
@@ -389,7 +403,15 @@ export default function HomePage() {
           ) : null}
         </aside>
 
+        {!showDashboardOnly ? (
         <section className="order-1 md:order-2 space-y-4">
+          {user ? (
+            <div className="flex justify-end">
+              <Button variant="secondary" size="sm" onClick={() => setShowComposer(false)}>
+                Back to My Listings
+              </Button>
+            </div>
+          ) : null}
           <Card className="p-4">
             <p className="m-0 text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
               For Threads Sellers
@@ -540,6 +562,7 @@ export default function HomePage() {
             ) : null}
           </section>
         </section>
+        ) : null}
       </div>
 
       {editingItemId ? (
