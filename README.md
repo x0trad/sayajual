@@ -2,13 +2,14 @@
 
 Mobile-first web app that turns a Threads selling post into a simple listing page with item name, price, and status (`AVAILABLE` / `SOLD`).
 
-Now migrated to **Next.js + shadcn-style UI components** and **Postgres database storage**.
+Now migrated to **Next.js + shadcn-style UI components**, **Postgres database storage**, and a **basic auth gate**.
 
-## Current Scope (v0.2)
+## Current Scope (v0.3)
 
 - Paste Threads post URL
 - Parse into preview items (`name`, `price`, `status`)
 - Swipe left on item rows to reveal `Edit` and `Delete`
+- Sign in with email before publish
 - Publish listing and get shareable URL
 - Public listing page at `/l/:slug`
 
@@ -18,7 +19,7 @@ Now migrated to **Next.js + shadcn-style UI components** and **Postgres database
 - React
 - Tailwind CSS
 - shadcn-style UI primitives (`Button`, `Input`, `Card`, `StatusBadge`)
-- Postgres (`pg`) for listing persistence
+- Postgres (`pg`) for users, sessions, and listings
 
 ## Run Locally
 
@@ -49,22 +50,57 @@ Set one of these in your Vercel project:
 - `DATABASE_URL` (preferred)
 - `POSTGRES_URL` (fallback)
 
-Without this, publish and public listing pages will fail intentionally.
-
-## Project Structure
-
-- `app/page.jsx` - homepage UI and swipe interactions
-- `app/l/[slug]/page.jsx` - public listing page
-- `app/api/parse/route.js` - parse endpoint
-- `app/api/listings/publish/route.js` - publish endpoint
-- `components/ui/*` - shadcn-style primitives
-- `lib/parser.js` - Threads parsing logic
-- `lib/db.js` - Postgres pool + schema bootstrap
-- `lib/listings.js` - listing queries/writes
-
 ## API Endpoints
 
-### `POST /api/parse`
+### Auth
+
+#### `POST /api/auth/login`
+Request:
+
+```json
+{
+  "email": "you@example.com",
+  "name": "Kayla"
+}
+```
+
+Response:
+
+```json
+{
+  "user": {
+    "id": "usr_xxx",
+    "email": "you@example.com",
+    "name": "Kayla"
+  }
+}
+```
+
+#### `GET /api/auth/me`
+Response:
+
+```json
+{
+  "user": {
+    "id": "usr_xxx",
+    "email": "you@example.com",
+    "name": "Kayla"
+  }
+}
+```
+
+or
+
+```json
+{ "user": null }
+```
+
+#### `POST /api/auth/logout`
+Clears session cookie.
+
+### Parsing
+
+#### `POST /api/parse`
 Request:
 
 ```json
@@ -86,7 +122,11 @@ Response:
 }
 ```
 
-### `POST /api/listings/publish`
+### Publishing
+
+#### `POST /api/listings/publish`
+Auth required.
+
 Request:
 
 ```json
@@ -109,11 +149,18 @@ Response:
 }
 ```
 
-### `GET /l/:slug`
+### Public Listing
+
+#### `GET /l/:slug`
 Returns a public mobile listing page.
+
+## Notes
+
+- Session auth is basic email-based MVP auth (no OAuth yet).
+- Database schema is auto-created by app startup logic.
 
 ## Next Milestones
 
-1. Sign-in required before publish
-2. Real AI structured extraction (replace heuristics)
-3. Seller dashboard for post-publish status updates
+1. OAuth / passwordless auth provider
+2. Owner-only dashboard for post-publish edits
+3. Real AI structured extraction (replace heuristics)

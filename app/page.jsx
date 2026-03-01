@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -44,12 +44,45 @@ export default function HomePage() {
   const [publishedLink, setPublishedLink] = useState('');
   const [swipeOffsets, setSwipeOffsets] = useState({});
 
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+
   const activeSwipeRef = useRef({ id: null, startX: 0, startY: 0, baseOffset: 0 });
 
   const canPublish = useMemo(
-    () => !isPublishing && items.length > 0 && Boolean(sourceUrl),
-    [isPublishing, items.length, sourceUrl]
+    () => !isPublishing && items.length > 0 && Boolean(sourceUrl) && Boolean(user),
+    [isPublishing, items.length, sourceUrl, user]
   );
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadSession = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        const payload = await response.json();
+
+        if (!mounted) return;
+        setUser(payload.user || null);
+      } catch {
+        if (!mounted) return;
+        setUser(null);
+      } finally {
+        if (mounted) {
+          setAuthLoading(false);
+        }
+      }
+    };
+
+    loadSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const closeAllSwipes = (exceptId = null) => {
     setSwipeOffsets((current) => {
@@ -154,7 +187,56 @@ export default function HomePage() {
     }
   };
 
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    const nextEmail = email.trim().toLowerCase();
+    if (!nextEmail) {
+      setFeedback('Please enter your email to sign in.');
+      return;
+    }
+
+    setLoginLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: nextEmail, name: name.trim() }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setFeedback(payload.error || 'Unable to sign in right now.');
+        return;
+      }
+
+      setUser(payload.user || null);
+      setFeedback('Signed in. You can now publish listings.');
+    } catch {
+      setFeedback('Network error while signing in.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      setFeedback('Signed out. Sign in again to publish.');
+    } catch {
+      setFeedback('Unable to sign out right now.');
+    }
+  };
+
   const handlePublish = async () => {
+    if (!user) {
+      setFeedback('Please sign in before publishing.');
+      return;
+    }
+
     if (!canPublish) {
       setFeedback('Convert a Threads post first before publishing.');
       return;
@@ -276,6 +358,41 @@ export default function HomePage() {
           </Button>
         </form>
 
+        <div className="mt-4 rounded-xl border border-border bg-white p-3">
+          {authLoading ? (
+            <p className="m-0 text-sm text-muted">Checking sign-in status...</p>
+          ) : user ? (
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="m-0 text-sm font-bold text-foreground">Signed in as</p>
+                <p className="m-0 text-sm text-muted">{user.email}</p>
+              </div>
+              <Button variant="secondary" size="sm" onClick={handleLogout}>
+                Sign out
+              </Button>
+            </div>
+          ) : (
+            <form className="grid gap-2" onSubmit={handleLogin}>
+              <p className="m-0 text-sm font-bold text-foreground">Sign in to publish listings</p>
+              <Input
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Your name (optional)"
+              />
+              <Input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@email.com"
+              />
+              <Button size="sm" disabled={loginLoading}>
+                {loginLoading ? 'Signing in...' : 'Sign in'}
+              </Button>
+            </form>
+          )}
+        </div>
+
         <p className="mb-0 mt-3 min-h-5 text-xs text-muted" role="status" aria-live="polite">
           {feedback}
         </p>
@@ -351,7 +468,7 @@ export default function HomePage() {
           {isPublishing ? 'Publishing...' : 'Publish This Page'}
         </Button>
         <p className="mb-0 mt-2 text-center text-xs text-muted">
-          Publish to get a shareable link for your Threads post.
+          Sign in is required before publishing.
         </p>
 
         {publishedLink ? (

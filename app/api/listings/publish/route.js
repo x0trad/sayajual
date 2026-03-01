@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createListing, hasValidItems, normalizePublishedItems } from '@/lib/listings';
 import { hasDatabaseConfig } from '@/lib/db';
+import { getSessionCookieName, getUserBySessionToken } from '@/lib/auth';
 import { isValidThreadsUrl } from '@/lib/parser';
 
 export async function POST(request) {
@@ -12,6 +13,13 @@ export async function POST(request) {
   }
 
   try {
+    const token = request.cookies.get(getSessionCookieName())?.value;
+    const user = await getUserBySessionToken(token);
+
+    if (!user) {
+      return NextResponse.json({ error: 'Please sign in before publishing.' }, { status: 401 });
+    }
+
     const payload = await request.json();
     const sourceUrl = String(payload?.sourceUrl || '').trim();
     const title = String(payload?.title || 'Threads Seller Listing').trim();
@@ -28,7 +36,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No valid items to publish.' }, { status: 400 });
     }
 
-    const listing = await createListing({ sourceUrl, title, items });
+    const listing = await createListing({ ownerId: user.id, sourceUrl, title, items });
 
     return NextResponse.json(
       {
