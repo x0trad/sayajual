@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, #eef2ff, #f7f8fc 48%, #f9fafc);
+  color: #111727;
+}
+
+.swipe-row {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-actions {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: grid;
+  width: 152px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.swipe-panel {
+  position: relative;
+  z-index: 1;
+  background: white;
+  transition: transform 0.2s ease;
+  touch-action: pan-y;
+}
+
+.swipe-row.dragging .swipe-panel {
+  transition: none;
+}

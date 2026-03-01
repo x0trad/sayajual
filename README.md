@@ -2,7 +2,9 @@
 
 Mobile-first web app that turns a Threads selling post into a simple listing page with item name, price, and status (`AVAILABLE` / `SOLD`).
 
-## Current Scope (v0.1)
+Now migrated to **Next.js + shadcn-style UI components**.
+
+## Current Scope (v0.2)
 
 - Paste Threads post URL
 - Parse into preview items (`name`, `price`, `status`)
@@ -12,24 +14,35 @@ Mobile-first web app that turns a Threads selling post into a simple listing pag
 
 ## Tech Stack
 
-- Node.js HTTP server (no framework)
-- Vanilla HTML/CSS/JS frontend
-- Local JSON persistence for listings
+- Next.js App Router
+- React
+- Tailwind CSS
+- shadcn-style UI primitives (`Button`, `Input`, `Card`, `StatusBadge`)
+- Local JSON persistence for listings (dev only)
 
 ## Run Locally
 
 ```bash
+npm install
+npm run dev
+```
+
+Production build:
+
+```bash
+npm run build
 npm start
 ```
 
-Server starts on port `3000` by default and auto-falls forward (`3001`, `3002`, ...) if occupied.
-
 ## Project Structure
 
-- `index.html` - homepage UI
-- `styles.css` - mobile-first styles
-- `app.js` - frontend interactions (parse, swipe actions, publish)
-- `server.js` - API routes, static serving, listing rendering
+- `app/page.jsx` - homepage UI and swipe interactions
+- `app/l/[slug]/page.jsx` - public listing page
+- `app/api/parse/route.js` - parse endpoint
+- `app/api/listings/publish/route.js` - publish endpoint
+- `components/ui/*` - shadcn-style primitives
+- `lib/parser.js` - Threads parsing logic
+- `lib/listings.js` - listing persistence/slug logic
 - `data/listings.json` - local published listings data (runtime)
 
 ## API Endpoints
@@ -82,13 +95,14 @@ Response:
 ### `GET /l/:slug`
 Returns a public mobile listing page.
 
-## Notes
+## Important Note for Vercel
 
-- Parse currently uses lightweight heuristic extraction with fallback sample data if parsing fails.
-- Auth gate is not implemented yet.
+Current persistence uses `data/listings.json`, which is not durable in serverless environments.
+For production launch, migrate to Vercel KV/Postgres so published listings persist.
 
 ## Next Milestones
 
 1. Sign-in required before publish
 2. Real AI structured extraction (replace heuristics)
-3. Seller dashboard for post-publish status updates
+3. Move listing persistence to Vercel KV/Postgres
+4. Seller dashboard for post-publish status updates
