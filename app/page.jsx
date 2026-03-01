@@ -161,10 +161,11 @@ export default function HomePage() {
         body: JSON.stringify({ threadUrl: nextThreadUrl }),
       });
 
-      const payload = await response.json();
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+      const payload = isJson ? await response.json() : { error: await response.text() };
 
       if (!response.ok) {
-        setFeedback(payload.error || 'Unable to parse this post right now.');
+        setFeedback(payload.error || `Unable to parse this post right now (${response.status}).`);
         setSourceUrl('');
         setItems([]);
         return;

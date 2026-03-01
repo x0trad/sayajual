@@ -50,6 +50,11 @@ Set one of these in your Vercel project:
 - `DATABASE_URL` (preferred)
 - `POSTGRES_URL` (fallback)
 
+For AI extraction (recommended), also set:
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` (optional, default: `gpt-4.1-mini`)
+
 ## API Endpoints
 
 ### Auth
@@ -158,6 +163,7 @@ Returns a public mobile listing page.
 
 - Session auth is basic email-based MVP auth (no OAuth yet).
 - Database schema is auto-created by app startup logic.
+- Parser uses OpenAI extraction when `OPENAI_API_KEY` is set; otherwise it falls back to regex heuristics.
 
 ## Next Milestones
 
