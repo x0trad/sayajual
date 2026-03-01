@@ -555,7 +555,9 @@ export default function HomePage() {
             <Button className="w-full" size="lg" disabled={!canPublish} onClick={handlePublish}>
               {isPublishing ? 'Publishing...' : 'Publish This Page'}
             </Button>
-            <p className="mb-0 mt-2 text-center text-xs text-muted">Sign in is required before publishing.</p>
+            {!user ? (
+              <p className="mb-0 mt-2 text-center text-xs text-muted">Sign in is required before publishing.</p>
+            ) : null}
 
             {publishedLink ? (
               <Card className="mt-2 p-3">
