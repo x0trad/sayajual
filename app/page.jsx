@@ -54,6 +54,8 @@ export default function HomePage() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
 
@@ -250,6 +252,7 @@ export default function HomePage() {
       }
 
       setUser(payload.user || null);
+      setAuthModalOpen(false);
       setFeedback('Signed in. You can now publish listings.');
     } catch {
       setFeedback('Network error while signing in.');
@@ -273,6 +276,8 @@ export default function HomePage() {
   const handlePublish = async () => {
     if (!user) {
       setFeedback('Please sign in before publishing.');
+      setAuthMode('signin');
+      setAuthModalOpen(true);
       return;
     }
 
@@ -368,6 +373,44 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-[1120px] px-4 pb-7 pt-5" onClick={() => closeAllSwipes()}>
+      <Card className="mb-4 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="m-0 text-lg font-extrabold text-foreground">Sayajual</p>
+          <div className="flex items-center gap-2">
+            {authLoading ? null : user ? (
+              <>
+                <p className="hidden text-xs text-muted md:block">{user.email}</p>
+                <Button variant="secondary" size="sm" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  Sign in
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  Sign up
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </Card>
+
       <div className={showDashboardOnly ? 'grid gap-4' : 'grid gap-4 md:grid-cols-[280px_1fr]'}>
         <aside className={showDashboardOnly ? 'order-1' : 'order-2 md:order-1'}>
           {user ? (
@@ -379,6 +422,11 @@ export default function HomePage() {
                 </Button>
               </div>
               <p className="mt-1 text-xs text-muted">Your created Threads listings</p>
+              {showComposer ? (
+                <Button className="mt-2 w-full" variant="secondary" size="sm" onClick={() => setShowComposer(false)}>
+                  ← Back
+                </Button>
+              ) : null}
 
               <div className="mt-3 max-h-[55vh] space-y-2 overflow-auto pr-1">
                 {listingsLoading ? (
@@ -435,41 +483,6 @@ export default function HomePage() {
                 {isParsing ? 'Converting...' : 'Turn Into List'}
               </Button>
             </form>
-
-            <div className="mt-4 rounded-xl border border-border bg-white p-3">
-              {authLoading ? (
-                <p className="m-0 text-sm text-muted">Checking sign-in status...</p>
-              ) : user ? (
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="m-0 text-sm font-bold text-foreground">Signed in as</p>
-                    <p className="m-0 text-sm text-muted">{user.email}</p>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={handleLogout}>
-                    Sign out
-                  </Button>
-                </div>
-              ) : (
-                <form className="grid gap-2" onSubmit={handleLogin}>
-                  <p className="m-0 text-sm font-bold text-foreground">Sign in to publish listings</p>
-                  <Input
-                    type="text"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder="Your name (optional)"
-                  />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="you@email.com"
-                  />
-                  <Button size="sm" disabled={loginLoading}>
-                    {loginLoading ? 'Signing in...' : 'Sign in'}
-                  </Button>
-                </form>
-              )}
-            </div>
 
             <p className="mb-0 mt-3 min-h-5 text-xs text-muted" role="status" aria-live="polite">
               {feedback}
@@ -605,6 +618,46 @@ export default function HomePage() {
                   Save
                 </Button>
               </div>
+            </Card>
+          </div>
+        </div>
+      ) : null}
+
+      {authModalOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/45 p-4" onClick={() => setAuthModalOpen(false)}>
+          <div className="mx-auto mt-16 w-full max-w-[430px]" onClick={(event) => event.stopPropagation()}>
+            <Card className="p-4">
+              <h3 className="m-0 text-lg font-extrabold text-foreground">
+                {authMode === 'signup' ? 'Sign up' : 'Sign in'}
+              </h3>
+              <p className="mt-1 text-sm text-muted">
+                {authMode === 'signup'
+                  ? 'Create your seller account to publish listings.'
+                  : 'Sign in to publish listings.'}
+              </p>
+
+              <form className="mt-3 grid gap-2" onSubmit={handleLogin}>
+                <Input
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Your name (optional)"
+                />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@email.com"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Button type="button" variant="secondary" onClick={() => setAuthModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={loginLoading}>
+                    {loginLoading ? 'Please wait...' : authMode === 'signup' ? 'Create Account' : 'Sign in'}
+                  </Button>
+                </div>
+              </form>
             </Card>
           </div>
         </div>
