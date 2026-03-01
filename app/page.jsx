@@ -74,7 +74,6 @@ export default function HomePage() {
     () => !isPublishing && items.length > 0 && Boolean(sourceUrl) && Boolean(user),
     [isPublishing, items.length, sourceUrl, user]
   );
-  const showDashboardOnly = Boolean(user) && !showComposer;
 
   const loadMyListings = async () => {
     if (!user) {
@@ -412,21 +411,27 @@ export default function HomePage() {
       </Card>
 
       <div className="grid gap-4">
-        <aside className={showDashboardOnly ? 'order-1' : 'order-2'}>
+        <aside className="order-2">
           {user ? (
             <Card className="p-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="m-0 text-lg font-extrabold text-foreground">My Listings</h2>
-                <Button size="sm" onClick={() => setShowComposer(true)}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setShowComposer(true);
+                    setThreadUrl('');
+                    setSourceUrl('');
+                    setPublishedLink('');
+                    setItems(INITIAL_ITEMS.map(mapItem));
+                    setFeedback('Paste a Threads link to create a new listing.');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                >
                   Create New
                 </Button>
               </div>
               <p className="mt-1 text-xs text-muted">Your created Threads listings</p>
-              {showComposer ? (
-                <Button className="mt-2 w-full" variant="secondary" size="sm" onClick={() => setShowComposer(false)}>
-                  ← Back
-                </Button>
-              ) : null}
 
               <div className="mt-3 max-h-[55vh] space-y-2 overflow-auto pr-1">
                 {listingsLoading ? (
@@ -451,15 +456,7 @@ export default function HomePage() {
           ) : null}
         </aside>
 
-        {!showDashboardOnly ? (
         <section className="order-1 space-y-4">
-          {user ? (
-            <div className="flex justify-end">
-              <Button variant="secondary" size="sm" onClick={() => setShowComposer(false)}>
-                Back to My Listings
-              </Button>
-            </div>
-          ) : null}
           <Card className="p-4">
             <p className="m-0 text-xs font-extrabold uppercase tracking-[0.08em] text-muted">
               For Threads Sellers
@@ -575,7 +572,6 @@ export default function HomePage() {
             ) : null}
           </section>
         </section>
-        ) : null}
       </div>
 
       {editingItemId ? (
